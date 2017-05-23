@@ -266,7 +266,12 @@
          them will be ignored outright
      -->
     <fieldtype name="ignored" stored="false" indexed="false" class="solr.StrField" />
-
+    <!-- setting up keywords for oral histories MD 1-3-17 -->
+    <fieldType name="semicolonDelimited" class="solr.TextField">
+      <analyzer>
+        <tokenizer class="solr.PatternTokenizerFactory" pattern="; "/>
+      </analyzer>
+    </fieldType>
      <!-- PID needs a new tokenized type for the PID that does no tokenizing.-->
     <fieldType name="text_keyword" class="solr.TextField">
       <analyzer>
@@ -337,6 +342,12 @@
    <dynamicField name="*_et" type="edgedText" indexed="true" stored="true" multiValued="true"/>
    <dynamicField name="*_mlt" type="mappedLowerText" indexed="true" stored="true" multiValued='false'/>
 
+   <!-- oralhistory fields -->
+   <dynamicField name="or_*" type="text" indexed="true" stored="true" multiValued="true"/>
+   <field name="or_keywords" type="text" indexed="true" stored="true" multiValued="true"/>
+   <field name="oh_keyword" type="semicolonDelimited" indexed="true" stored="true" multiValued="true"/>
+   <copyField source="or_keywords" dest="oh_keyword"/>
+
    <!-- uncomment the following to ignore any fields that don't already match an existing
         field name or dynamic field, rather than reporting them as an error.
         alternately, change the type="ignored" to some other type e.g. "text" if you want
@@ -344,6 +355,10 @@
    <field name="dc.description" type="text_fgs"  indexed="true"  stored="true" multiValued="true"/>
    <dynamicField name="*" type="text_fgs"  indexed="true"  stored="true" multiValued="true"/>
    <field name="_version_" type="long" indexed="true" stored="true"/>
+   <!-- new names and dates -->
+   <field name="mods_originInfo_dates_merge_mdt" type="date" indexed="true" stored="true" multiValued="true"/>
+   <field name="catch_all_names_mt" type="text" indexed="true"  stored="true" multiValued="true"/>
+   <field name="mods_originInfo_dates_merge_ms" type="string"  indexed="true"  stored="true" multiValued="true"/>
 
  </fields>
 
@@ -374,9 +389,16 @@
 <copyField source="*_dt" dest="*_mdt"/>
 <copyField source="*_mdt" dest="*_mt"/>
 <copyField source="PID" dest="PID_kw"/>
+<!-- dates and names -->
+<copyField source="mods_originInfo_dateCreated_mdt" dest="mods_originInfo_dates_merge_mdt"/>
+<copyField source="mods_originInfo_dateIssued_mdt" dest="mods_originInfo_dates_merge_mdt"/>
+<copyField source="mods_originInfo_dateCreated_ms" dest="mods_originInfo_dates_merge_ms"/>
+<copyField source="mods_originInfo_dateIssued_ms" dest="mods_originInfo_dates_merge_ms"/>
+<copyField source="mods_name_*namePart_mt" dest="catch_all_names_mt"/>
+<copyField source="mods_subject_name_*namePart_ms" dest="catch_all_names_mt"/>
 
 <!-- The following line is a bit of a performance hog, I would look to remove it if the indexing takes a long time. -->
-<copyField source="*" dest="catch_all_fields_mt"/>
+<!-- <copyField source="*" dest="catch_all_fields_mt"/> -->
 
  <!-- Similarity is the scoring routine for each document vs. a query.
       A custom similarity may be specified here, but the default is fine
